@@ -1495,21 +1495,34 @@ function handleMusicInput(query) {
 async function searchAndPlayMusic(query) {
   addMusicBotMessage('🔍 Searching for "' + query + '"...');
   try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=5`);
+    // Use Deezer search API (works from Iran, no auth needed)
+    const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=5`);
     const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      const track = data.results[0];
-      const previewUrl = track.previewUrl;
-      const title = track.trackName;
-      const artist = track.artistName;
+    if (data.data && data.data.length > 0) {
+      const track = data.data[0];
+      const previewUrl = track.preview; // 30-sec preview
+      const title = track.title;
+      const artist = track.artist.name;
+      const albumArt = track.album.cover_medium;
+      const deezerLink = track.link; // Full track link
 
-      playMusicFromUrl(previewUrl, title, artist);
+      // Use Deezer embed for full playback (bypasses 30s limit)
+      playMusicFromDeezer(track.id, title, artist, albumArt);
       addMusicBotMessage(`🎵 Now playing: ${title} — ${artist}`);
     } else {
-      addMusicBotMessage('❌ No results found for "' + query + '"');
+      // Fallback to iTunes
+      const res2 = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=1`);
+      const data2 = await res2.json();
+      if (data2.results && data2.results.length > 0) {
+        const track = data2.results[0];
+        playMusicFromUrl(track.previewUrl, track.trackName, track.artistName);
+        addMusicBotMessage(`🎵 Now playing (preview): ${track.trackName} — ${track.artistName}`);
+      } else {
+        addMusicBotMessage('❌ No results found for "' + query + '"');
+      }
     }
   } catch (e) {
-    addMusicBotMessage('❌ Search failed. Try a direct audio URL.');
+    addMusicBotMessage('❌ Search failed. Try a direct audio URL or @music upload');
   }
 }
 
@@ -1566,6 +1579,49 @@ function musicNext() {
 
 function musicPrev() {
   musicAudio.currentTime = 0;
+}
+
+function playMusicFromDeezer(trackId, title, artist, albumArt) {
+  // Remove existing deezer embed if any
+  const existing = document.getElementById('deezerEmbed');
+  if (existing) existing.remove();
+
+  // Create floating Deezer widget
+  const container = document.createElement('div');
+  container.id = 'deezerEmbed';
+  container.style.cssText = `
+    position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%);
+    width: 300px; z-index: 100; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6); border: 1px solid rgba(245,158,11,0.3);
+  `;
+
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://widget.deezer.com/widget/dark/track/${trackId}?tracklist=false&height=80`;
+  iframe.width = '300';
+  iframe.height = '80';
+  iframe.frameBorder = '0';
+  iframe.allow = 'autoplay; encrypted-media';
+  iframe.style.cssText = 'border: none; border-radius: 16px;';
+  container.appendChild(iframe);
+  document.body.appendChild(container);
+
+  // Update music player UI
+  document.getElementById('musicPlayer').classList.add('visible');
+  document.getElementById('musicTitle').textContent = title;
+  document.getElementById('musicArtist').textContent = artist;
+
+  // Album art
+  const artEl = document.querySelector('.music-art');
+  if (albumArt) {
+    artEl.innerHTML = `<img src="${albumArt}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
+  }
+
+  showToast('🎵 Now playing: ' + title, 'success');
+
+  // Sync to peers
+  if (conn?.open) {
+    conn.send({ type: 'music', action: 'deezer', trackId, title, artist });
+  }
 }
 
 function handleMusicCommand(data) {
