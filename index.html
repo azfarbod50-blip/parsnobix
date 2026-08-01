@@ -90,6 +90,22 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;b
 .toast.err{border-color:rgba(239,68,68,.3);color:var(--danger)}
 .toast.info{border-color:rgba(245,158,11,.3);color:var(--accent)}
 
+/* ── MUSIC WIDGET ── */
+.music-w{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(17,18,24,.92);backdrop-filter:blur(24px);border:1px solid rgba(245,158,11,.2);border-radius:var(--r2);padding:10px 18px;display:none;align-items:center;gap:12px;z-index:60;box-shadow:0 8px 40px rgba(0,0,0,.5);min-width:320px;opacity:0;transition:all .3s var(--ease)}
+.music-w.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+.music-w-art{width:42px;height:42px;border-radius:10px;background:var(--bg3);overflow:hidden;display:grid;place-items:center;flex-shrink:0}
+.music-w-art img{width:100%;height:100%;object-fit:cover}
+.music-w-info{flex:1;min-width:0}
+.music-w-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-w-artist{font-size:10px;color:var(--text3)}
+.music-w-ctrls{display:flex;gap:4px}
+.mcb{width:30px;height:30px;border-radius:50%;border:none;background:none;color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:13px;transition:all .15s var(--ease)}
+.mcb:hover{background:var(--bg4);color:var(--accent)}
+.mcb.play{width:34px;height:34px;background:var(--accent);color:#000}
+.mcb.play:hover{transform:scale(1.1);color:#000}
+.music-w-bar{position:absolute;bottom:0;left:18px;right:18px;height:2px;background:var(--bg4);border-radius:1px;overflow:hidden}
+.music-w-fill{height:100%;background:var(--accent);width:0%;transition:width .3s linear;border-radius:1px}
+
 /* RESPONSIVE */
 @media(max-width:768px){
   .ctrls{padding:10px 14px;gap:7px}
@@ -154,6 +170,21 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;b
     <button class="cb" id="chatBtn" onclick="toggleChat()">💬<span class="cb-tip">Chat (C)</span></button>
     <button class="cb" id="nickBtn" onclick="toggleNick()">👤<span class="cb-tip">Participants</span></button>
     <button class="cb leave" onclick="leave()">📞 Leave</button>
+  </div>
+
+  <!-- Music Widget -->
+  <div class="music-w" id="musicW">
+    <div class="music-w-art" id="musicArt">🎵</div>
+    <div class="music-w-info">
+      <div class="music-w-title" id="musicTitle">No track</div>
+      <div class="music-w-artist" id="musicArtist">—</div>
+    </div>
+    <div class="music-w-ctrls">
+      <button class="mcb" onclick="mPrev()">⏮</button>
+      <button class="mcb play" id="mPlayBtn" onclick="mToggle()">▶</button>
+      <button class="mcb" onclick="mNext()">⏭</button>
+    </div>
+    <div class="music-w-bar"><div class="music-w-fill" id="mFill"></div></div>
   </div>
 </div>
 
@@ -252,6 +283,20 @@ function startMeeting(){
     isVidOn=!e.muted;
     updateVidBtn();
   });
+
+  // ── MUSIC BOT: listen for @music in chat ──
+  api.addEventListener('chatMessageReceived',(e)=>{
+    const msg=e.message||'';
+    if(msg.startsWith('@music')){
+      const query=msg.slice(6).trim();
+      if(query) handleMusicCmd(query,e.id);
+    }
+  });
+  api.addEventListener('commandReceived',(e)=>{
+    if(e.command==='music-sync'){
+      try{const d=JSON.parse(e.data.value);playDeezer(d.id,d.title,d.artist,d.art)}catch(ex){}
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════
@@ -326,6 +371,111 @@ document.addEventListener('keydown',e=>{
   if(!document.getElementById('app').classList.contains('show'))return;
   switch(e.key){case'm':toggleMic();break;case'v':toggleVideo();break;case's':toggleScreen();break;case'c':toggleChat();break}
 });
+
+// ═══════════════════════════════════════════════════
+//  MUSIC BOT — listens to Jitsi chat for @music
+// ═══════════════════════════════════════════════════
+const musicAudio=document.createElement('audio');
+musicAudio.crossOrigin='anonymous';
+document.body.appendChild(musicAudio);
+
+
+
+function handleMusicCmd(query,senderId){
+  // Direct audio URL
+  if(query.match(/\.(mp3|ogg|wav|flac|m4a|aac)(\?.*)?$/i)){
+    playMusicUrl(query,'Shared Track',senderId);
+    return;
+  }
+  // File upload command
+  if(query==='upload'||query==='file'){
+    document.getElementById('fileInput').click();
+    return;
+  }
+  // Search via Deezer
+  searchDeezer(query,senderId);
+}
+
+async function searchDeezer(q,senderId){
+  sendJitsiMsg('🔍 Searching "'+q+'"...');
+  try{
+    const r=await fetch('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=3');
+    const d=await r.json();
+    if(d.data&&d.data.length>0){
+      const t=d.data[0];
+      playDeezer(t.id,t.title,t.artist.name,t.album.cover_big);
+      sendJitsiMsg('🎵 Now playing: '+t.title+' — '+t.artist.name);
+    }else{
+      sendJitsiMsg('❌ No results. Try a direct URL or @music upload');
+    }
+  }catch(e){sendJitsiMsg('❌ Search failed. Try @music upload')}
+}
+
+function playDeezer(id,title,artist,art){
+  // Remove old embed
+  const old=document.getElementById('deezerW');if(old)old.remove();
+  // Create Deezer widget
+  const w=document.createElement('div');w.id='deezerW';
+  w.style.cssText='position:fixed;bottom:148px;left:50%;transform:translateX(-50%);width:300px;z-index:65;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);border:1px solid rgba(245,158,11,.2);';
+  const f=document.createElement('iframe');
+  f.src='https://widget.deezer.com/widget/dark/track/'+id+'?tracklist=false&height=80';
+  f.width='300';f.height='80';f.frameBorder='0';f.allow='autoplay; encrypted-media';
+  f.style.cssText='border:none;border-radius:14px;';
+  w.appendChild(f);document.body.appendChild(w);
+  // Update widget
+  document.getElementById('musicW').classList.add('show');
+  document.getElementById('musicTitle').textContent=title;
+  document.getElementById('musicArtist').textContent=artist;
+  if(art){document.getElementById('musicArt').innerHTML='<img src="'+art+'">'}
+  toast('🎵 '+title,'ok');
+  // Sync to peers via Jitsi chat
+  if(api) api.sendCommand('music-sync',{value:JSON.stringify({id,title,artist,art})});
+}
+
+function playMusicUrl(url,title,senderId){
+  musicAudio.src=url;
+  musicAudio.play().then(()=>{
+    document.getElementById('musicW').classList.add('show');
+    document.getElementById('musicTitle').textContent=title;
+    document.getElementById('musicArtist').textContent=senderId||'Shared';
+    document.getElementById('mPlayBtn').textContent='⏸';
+    musicAudio.ontimeupdate=()=>{
+      if(musicAudio.duration) document.getElementById('mFill').style.width=(musicAudio.currentTime/musicAudio.duration)*100+'%';
+    };
+    musicAudio.onended=()=>{
+      document.getElementById('mPlayBtn').textContent='▶';
+      document.getElementById('mFill').style.width='0%';
+    };
+  }).catch(e=>sendJitsiMsg('❌ '+e.message));
+}
+
+function mToggle(){
+  if(!musicAudio.paused){musicAudio.pause();document.getElementById('mPlayBtn').textContent='▶'}
+  else{musicAudio.play();document.getElementById('mPlayBtn').textContent='⏸'}
+}
+function mPrev(){musicAudio.currentTime=0}
+function mNext(){musicAudio.currentTime=musicAudio.duration||0}
+
+function sendJitsiMsg(text){
+  if(api) api.executeCommand('toggleChat');
+  // Use Jitsi's sendTextMessage to broadcast
+  if(api) api.sendCommand('chat-msg',{value:text});
+}
+
+
+
+// File upload for music
+const fileInput=document.createElement('input');
+fileInput.type='file';fileInput.accept='audio/*';fileInput.id='fileInput';fileInput.style.display='none';
+fileInput.onchange=e=>{
+  const f=e.target.files[0];
+  if(f){
+    const url=URL.createObjectURL(f);
+    playMusicUrl(url,f.name.replace(/\.[^.]+$/,''),myName);
+    sendJitsiMsg('🎵 Playing: '+f.name);
+  }
+};
+document.body.appendChild(fileInput);
 </script>
 </body>
 </html>
