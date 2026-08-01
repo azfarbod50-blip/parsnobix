@@ -2,480 +2,139 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ParsNobix — Encrypted Voice & Screen Share</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParsNobix</title>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#090a0e;--bg2:#111218;--bg3:#1a1c26;--bg4:#22243a;
-  --accent:#f59e0b;--accent2:#d97706;--accent-glow:rgba(245,158,11,.12);
-  --accent-glow2:rgba(245,158,11,.25);
-  --text:#f0f4f8;--text2:#94a3b8;--text3:#5a6577;
-  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
-  --danger:#ef4444;--success:#22c55e;
-  --r:14px;--r2:20px;--r3:28px;
-  --ease:cubic-bezier(.4,0,.2,1);
-  --spring:cubic-bezier(.34,1.56,.64,1);
-}
-html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-
-/* ── LANDING ── */
-#landing{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:50}
-#landing.hide{animation:landOut .4s var(--ease) forwards}
-@keyframes landOut{to{opacity:0;transform:scale(.96);pointer-events:none}}
-.l-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% -10%,rgba(245,158,11,.06),transparent 60%),var(--bg)}
-.l-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:36px;width:min(420px,90vw);animation:landIn .5s var(--ease)}
-@keyframes landIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.l-logo{display:flex;flex-direction:column;align-items:center;gap:10px}
-.l-icon{width:58px;height:58px;border-radius:var(--r);background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:26px;box-shadow:0 0 40px var(--accent-glow2)}
-.l-logo h1{font-size:30px;font-weight:800;letter-spacing:-.5px}
-.l-logo p{color:var(--text2);font-size:13px}
-.l-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:28px;width:100%;display:flex;flex-direction:column;gap:16px}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
-.field input{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:13px 15px;color:var(--text);font:inherit;font-size:14px;outline:none;transition:all .2s var(--ease)}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
-.field input::placeholder{color:var(--text3)}
-.btn{padding:13px;border:none;border-radius:var(--r);font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s var(--ease);display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
-.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s}
-.btn:active::after{background:rgba(255,255,255,.1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#090a0e;color:#f0f4f8;height:100vh;overflow:hidden}
+#landing{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#090a0e;z-index:100}
+.l-box{background:#111218;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;width:380px;display:flex;flex-direction:column;gap:16px}
+.l-box h1{font-size:24px;text-align:center}
+.l-box p{text-align:center;color:#94a3b8;font-size:13px;margin-top:-8px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.field input{background:#090a0e;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f0f4f8;font:inherit;font-size:14px;outline:none}
+.field input:focus{border-color:#f59e0b}
+.btn{padding:12px;border:none;border-radius:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;background:#f59e0b;color:#000}
 .btn:active{transform:scale(.97)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:0 4px 24px var(--accent-glow2)}
-.btn-primary:hover{box-shadow:0 6px 32px rgba(245,158,11,.35);transform:translateY(-1px)}
-.btn-ghost{background:var(--bg3);border:1px solid var(--border2);color:var(--text)}
-.btn-ghost:hover{background:var(--bg4);border-color:rgba(245,158,11,.2)}
-.sep{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px}
-.sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* ── APP ── */
-#app{display:none;flex-direction:column;height:100vh;position:relative}
-#app.show{display:flex}
-
-/* TOPBAR */
-.top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(9,10,14,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);z-index:30;min-height:52px}
-.top-l{display:flex;align-items:center;gap:10px}
-.top-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:14px}
-.top-title{font-size:15px;font-weight:700}
-.top-r{display:flex;align-items:center;gap:10px}
-.badge{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r);font-size:11px;font-weight:600}
-.badge-enc{background:var(--accent-glow);border:1px solid rgba(245,158,11,.2);color:var(--accent)}
-.badge-live{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--success)}
-.badge-live .dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:blink 2s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-.room-code{font-size:11px;color:var(--text3);padding:4px 9px;background:var(--bg3);border-radius:var(--r);cursor:pointer;transition:all .2s var(--ease);font-family:monospace}
-.room-code:hover{background:var(--bg4);color:var(--text2)}
-
-/* JITSI IFRAME */
-.jitsi-wrap{flex:1;position:relative;overflow:hidden}
-#jitsiFrame{width:100%;height:100%;border:none}
-
-/* CONTROLS (custom overlay) */
-.ctrls{display:flex;align-items:center;justify-content:center;padding:14px 20px;background:rgba(9,10,14,.85);backdrop-filter:blur(24px);border-top:1px solid var(--border);gap:10px;z-index:30}
-.cb{width:50px;height:50px;border-radius:50%;border:none;display:grid;place-items:center;cursor:pointer;transition:all .25s var(--spring);font-size:19px;background:var(--bg3);color:var(--text);border:1px solid var(--border);position:relative;flex-shrink:0}
-.cb:hover{background:var(--bg4);border-color:var(--border2);transform:scale(1.1)}
-.cb:active{transform:scale(.92)}
-.cb.on{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:0 0 24px var(--accent-glow2)}
-.cb.off{background:var(--danger);color:#fff;border-color:var(--danger);box-shadow:0 0 20px rgba(239,68,68,.2)}
-.cb.leave{width:auto;padding:0 22px;border-radius:var(--r);gap:7px;font-size:13px;font-weight:700;background:var(--danger);color:#fff;border-color:var(--danger)}
-.cb.leave:hover{background:#dc2626;box-shadow:0 0 30px rgba(239,68,68,.3)}
-.cb-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);padding:5px 9px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s var(--ease)}
-.cb:hover .cb-tip{opacity:1}
-
-/* TOAST */
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-12px);padding:10px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-weight:600;z-index:200;opacity:0;pointer-events:none;transition:all .3s var(--ease);backdrop-filter:blur(12px)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{border-color:rgba(34,197,94,.3);color:var(--success)}
-.toast.err{border-color:rgba(239,68,68,.3);color:var(--danger)}
-.toast.info{border-color:rgba(245,158,11,.3);color:var(--accent)}
-
-/* ── MUSIC WIDGET ── */
-.music-w{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(17,18,24,.92);backdrop-filter:blur(24px);border:1px solid rgba(245,158,11,.2);border-radius:var(--r2);padding:10px 18px;display:none;align-items:center;gap:12px;z-index:60;box-shadow:0 8px 40px rgba(0,0,0,.5);min-width:320px;opacity:0;transition:all .3s var(--ease)}
-.music-w.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
-.music-w-art{width:42px;height:42px;border-radius:10px;background:var(--bg3);overflow:hidden;display:grid;place-items:center;flex-shrink:0}
-.music-w-art img{width:100%;height:100%;object-fit:cover}
-.music-w-info{flex:1;min-width:0}
-.music-w-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.music-w-artist{font-size:10px;color:var(--text3)}
-.music-w-ctrls{display:flex;gap:4px}
-.mcb{width:30px;height:30px;border-radius:50%;border:none;background:none;color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:13px;transition:all .15s var(--ease)}
-.mcb:hover{background:var(--bg4);color:var(--accent)}
-.mcb.play{width:34px;height:34px;background:var(--accent);color:#000}
-.mcb.play:hover{transform:scale(1.1);color:#000}
-.music-w-bar{position:absolute;bottom:0;left:18px;right:18px;height:2px;background:var(--bg4);border-radius:1px;overflow:hidden}
-.music-w-fill{height:100%;background:var(--accent);width:0%;transition:width .3s linear;border-radius:1px}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .ctrls{padding:10px 14px;gap:7px}
-  .cb{width:44px;height:44px;font-size:17px}
-  .cb.leave{padding:0 16px;font-size:12px}
-  .badge-enc{display:none}
-}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.btn2{background:#1a1c26;border:1px solid rgba(255,255,255,.1);color:#f0f4f8}
+.sep{text-align:center;color:#5a6577;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+#jitsi{display:none;width:100%;height:100vh}
 </style>
 </head>
 <body>
 
-<div id="toast" class="toast"></div>
-
-<!-- LANDING -->
 <div id="landing">
-  <div class="l-bg"></div>
-  <div class="l-wrap">
-    <div class="l-logo">
-      <div class="l-icon">📡</div>
-      <h1>ParsNobix</h1>
-      <p>Encrypted voice calls & screen sharing</p>
+  <div class="l-box">
+    <h1>📡 ParsNobix</h1>
+    <p>Encrypted voice & screen share</p>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="name" placeholder="Your name" maxlength="30">
     </div>
-    <div class="l-card">
-      <div class="field">
-        <label>Your name</label>
-        <input type="text" id="inName" placeholder="Enter your name" maxlength="30">
-      </div>
-      <button class="btn btn-primary" onclick="createRoom()">✦ Create Room</button>
-      <div class="sep">or join existing</div>
-      <div class="field">
-        <label>Room code</label>
-        <input type="text" id="inRoom" placeholder="Paste room code" maxlength="50">
-      </div>
-      <button class="btn btn-ghost" onclick="joinRoom()">→ Join Room</button>
+    <button class="btn" onclick="create()">✦ Create Room</button>
+    <div class="sep">or join</div>
+    <div class="field">
+      <label>Room code</label>
+      <input type="text" id="room" placeholder="Paste code" maxlength="50">
     </div>
+    <button class="btn btn2" onclick="join()">→ Join</button>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <div class="top">
-    <div class="top-l">
-      <div class="top-icon">📡</div>
-      <span class="top-title">ParsNobix</span>
-      <span class="room-code" id="roomCode" onclick="copyLink()" title="Click to copy"></span>
-    </div>
-    <div class="top-r">
-      <div class="badge badge-enc">🔒 E2E Encrypted</div>
-      <div class="badge badge-live"><div class="dot"></div><span id="status">Connecting...</span></div>
-    </div>
-  </div>
+<div id="jitsi"></div>
 
-  <div class="jitsi-wrap">
-    <div id="jitsiContainer"></div>
-  </div>
+<audio id="ma" crossorigin="anonymous"></audio>
+<input type="file" id="fi" accept="audio/*" style="display:none">
 
-  <div class="ctrls">
-    <button class="cb" id="micBtn" onclick="toggleMic()">🎙️<span class="cb-tip">Mic (M)</span></button>
-    <button class="cb" id="vidBtn" onclick="toggleVideo()">📹<span class="cb-tip">Camera (V)</span></button>
-    <button class="cb" id="scrBtn" onclick="toggleScreen()">🖥️<span class="cb-tip">Share (S)</span></button>
-    <button class="cb" id="chatBtn" onclick="toggleChat()">💬<span class="cb-tip">Chat (C)</span></button>
-    <button class="cb" id="nickBtn" onclick="toggleNick()">👤<span class="cb-tip">Participants</span></button>
-    <button class="cb leave" onclick="leave()">📞 Leave</button>
-  </div>
-
-  <!-- Music Widget -->
-  <div class="music-w" id="musicW">
-    <div class="music-w-art" id="musicArt">🎵</div>
-    <div class="music-w-info">
-      <div class="music-w-title" id="musicTitle">No track</div>
-      <div class="music-w-artist" id="musicArtist">—</div>
-    </div>
-    <div class="music-w-ctrls">
-      <button class="mcb" onclick="mPrev()">⏮</button>
-      <button class="mcb play" id="mPlayBtn" onclick="mToggle()">▶</button>
-      <button class="mcb" onclick="mNext()">⏭</button>
-    </div>
-    <div class="music-w-bar"><div class="music-w-fill" id="mFill"></div></div>
-  </div>
-</div>
-
-<!-- Jitsi Meet API -->
 <script src="https://meet.jit.si/external_api.js"></script>
 <script>
-// ═══════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════
-let api=null, myName='', roomId='';
-let isMicOn=true, isVidOn=true;
+let api=null;
 
-function toast(m,t='info'){const e=document.getElementById('toast');e.textContent=m;e.className='toast '+t+' show';setTimeout(()=>e.className='toast',2500)}
-
-// ═══════════════════════════════════════════════════
-//  ROOM
-// ═══════════════════════════════════════════════════
-function createRoom(){
-  myName=document.getElementById('inName').value.trim()||'Anonymous';
-  roomId='ParsNobix-'+Math.random().toString(36).substring(2,8);
-  startMeeting();
+function create(){
+  const n=document.getElementById('name').value.trim()||'Anon';
+  const r='PN-'+Math.random().toString(36).slice(2,8);
+  start(n,r);
 }
-
-function joinRoom(){
-  myName=document.getElementById('inName').value.trim()||'Anonymous';
-  roomId=document.getElementById('inRoom').value.trim();
-  if(!roomId){toast('Enter a room code','err');return}
-  startMeeting();
+function join(){
+  const n=document.getElementById('name').value.trim()||'Anon';
+  const r=document.getElementById('room').value.trim();
+  if(!r)return alert('Enter room code');
+  start(n,r);
 }
+function start(name,room){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('jitsi').style.display='block';
 
-function startMeeting(){
-  document.getElementById('landing').classList.add('hide');
-  setTimeout(()=>{document.getElementById('landing').style.display='none'},500);
-  document.getElementById('app').classList.add('show');
-  document.getElementById('roomCode').textContent=roomId;
-
-  const domain='meet.jit.si';
-  const options={
-    roomName:roomId,
-    parentNode:document.getElementById('jitsiContainer'),
-    userInfo:{displayName:myName},
+  api=new JitsiMeetExternalAPI('meet.jit.si',{
+    roomName:room,
+    parentNode:document.getElementById('jitsi'),
+    userInfo:{displayName:name},
     configOverwrite:{
       startWithAudioMuted:false,
       startWithVideoMuted:true,
       prejoinPageEnabled:false,
-      disableDeepLinking:true,
-      toolbarButtons:[
-        'microphone','camera','desktop','chat',
-        'participants-pane','tileview',
-        'fullscreen','hangup','settings'
-      ],
-      filmstripOnly:false,
-      remoteVideoMenu:{disableKick:true},
-      hideLobbyByDefault:false,
+      disableDeepLinking:true
     },
     interfaceConfigOverwrite:{
       SHOW_JITSI_WATERMARK:false,
       SHOW_BRAND_WATERMARK:false,
       SHOW_WATERMARK_FOR_GUESTS:false,
-      DEFAULT_BACKGROUND:'#090a0e',
-      TOOLBAR_ALWAYS_VISIBLE:true,
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS:false,
-      SHOW_CHROME_EXTENSION_BANNER:false,
-      DISABLE_VIDEO_BACKGROUND:false,
-      JITSI_WATERMARK_LINK:'',
-      TOOLBAR_COLOR:'rgba(9,10,14,0.85)',
-      MAIN_TOOLBAR_COLOR:'rgba(9,10,14,0.85)',
-      PARTICIPANT_PANEL_BACKGROUND_COLOR:'rgba(17,18,24,0.95)',
-      SIDEBAR_COLOR:'#111218',
-      TOOLBAR_BG_COLOR:'#111218',
-    },
-    onload:()=>{
-      document.getElementById('status').textContent='Connected';
-      toast('Joined room!','ok');
-    }
-  };
-
-  api=new JitsiMeetExternalAPI(domain,options);
-
-  // Events
-  api.addEventListener('readyToClose',()=>leave());
-  api.addEventListener('videoConferenceJoined',()=>{
-    document.getElementById('status').textContent='In call';
-  });
-  api.addEventListener('participantJoined',(e)=>{
-    toast(e.displayName+' joined','ok');
-  });
-  api.addEventListener('participantLeft',(e)=>{
-    toast(e.displayName+' left','info');
-  });
-  api.addEventListener('audioMuteChanged',(e)=>{
-    isMicOn=!e.muted;
-    updateMicBtn();
-  });
-  api.addEventListener('videoMuteChanged',(e)=>{
-    isVidOn=!e.muted;
-    updateVidBtn();
-  });
-
-  // ── MUSIC BOT: listen for @music in chat ──
-  api.addEventListener('chatMessageReceived',(e)=>{
-    const msg=e.message||'';
-    if(msg.startsWith('@music')){
-      const query=msg.slice(6).trim();
-      if(query) handleMusicCmd(query,e.id);
+      DEFAULT_BACKGROUND:'#090a0e'
     }
   });
-  api.addEventListener('commandReceived',(e)=>{
-    if(e.command==='music-sync'){
-      try{const d=JSON.parse(e.data.value);playDeezer(d.id,d.title,d.artist,d.art)}catch(ex){}
-    }
+
+  // Listen for @music in chat
+  api.addEventListener('chatMessageReceived',e=>{
+    const m=e.message||'';
+    if(m.startsWith('@music')) doMusic(m.slice(6).trim(),e.id);
   });
+  api.addEventListener('readyToClose',()=>location.reload());
 }
 
-// ═══════════════════════════════════════════════════
-//  CONTROLS
-// ═══════════════════════════════════════════════════
-function toggleMic(){
-  if(!api)return;
-  isMicOn=!isMicOn;
-  api.executeCommand('toggleAudio');
-  updateMicBtn();
-}
-function updateMicBtn(){
-  const b=document.getElementById('micBtn');
-  b.className='cb'+(isMicOn?'':' off');
-  b.innerHTML=(isMicOn?'🎙️':'🔇')+'<span class="cb-tip">Mic (M)</span>';
-}
-function toggleVideo(){
-  if(!api)return;
-  isVidOn=!isVidOn;
-  api.executeCommand('toggleVideo');
-  updateVidBtn();
-}
-function updateVidBtn(){
-  const b=document.getElementById('vidBtn');
-  b.className='cb'+(isVidOn?'':' off');
-  b.innerHTML=(isVidOn?'📹':'📷')+'<span class="cb-tip">Camera (V)</span>';
-}
-function toggleScreen(){
-  if(!api)return;
-  api.executeCommand('toggleShareDesktop');
-  const b=document.getElementById('scrBtn');
-  b.classList.toggle('on');
-}
-function toggleChat(){
-  if(!api)return;
-  api.executeCommand('toggleChat');
-  document.getElementById('chatBtn').classList.toggle('on');
-}
-function toggleNick(){
-  if(!api)return;
-  api.executeCommand('toggleParticipantsPane');
-}
-function leave(){
-  if(api){api.dispose();api=null}
-  document.getElementById('app').classList.remove('show');
-  document.getElementById('landing').style.display='flex';
-  document.getElementById('landing').classList.remove('hide');
-  document.getElementById('jitsiContainer').innerHTML='';
-  document.getElementById('status').textContent='Connecting...';
+// ── MUSIC BOT ──
+function doMusic(q,id){
+  if(!q)return;
+  if(q==='upload'||q==='file'){document.getElementById('fi').click();return}
+  if(q.match(/\.(mp3|ogg|wav|flac|m4a|aac)(\?.*)?$/i)){playUrl(q,'Shared');return}
+  searchDZ(q);
 }
 
-// ═══════════════════════════════════════════════════
-//  COPY LINK
-// ═══════════════════════════════════════════════════
-function copyLink(){
-  const link=location.origin+location.pathname+'#'+roomId;
-  navigator.clipboard.writeText(link).then(()=>toast('Link copied!','ok')).catch(()=>toast('Copy failed','err'));
-}
-
-// ═══════════════════════════════════════════════════
-//  AUTO JOIN FROM URL
-// ═══════════════════════════════════════════════════
-window.addEventListener('load',()=>{
-  const h=location.hash.slice(1);
-  if(h){document.getElementById('inRoom').value=h}
-});
-
-// ═══════════════════════════════════════════════════
-//  KEYBOARD
-// ═══════════════════════════════════════════════════
-document.addEventListener('keydown',e=>{
-  if(!document.getElementById('app').classList.contains('show'))return;
-  switch(e.key){case'm':toggleMic();break;case'v':toggleVideo();break;case's':toggleScreen();break;case'c':toggleChat();break}
-});
-
-// ═══════════════════════════════════════════════════
-//  MUSIC BOT — listens to Jitsi chat for @music
-// ═══════════════════════════════════════════════════
-const musicAudio=document.createElement('audio');
-musicAudio.crossOrigin='anonymous';
-document.body.appendChild(musicAudio);
-
-
-
-function handleMusicCmd(query,senderId){
-  // Direct audio URL
-  if(query.match(/\.(mp3|ogg|wav|flac|m4a|aac)(\?.*)?$/i)){
-    playMusicUrl(query,'Shared Track',senderId);
-    return;
-  }
-  // File upload command
-  if(query==='upload'||query==='file'){
-    document.getElementById('fileInput').click();
-    return;
-  }
-  // Search via Deezer
-  searchDeezer(query,senderId);
-}
-
-async function searchDeezer(q,senderId){
-  sendJitsiMsg('🔍 Searching "'+q+'"...');
+async function searchDZ(q){
   try{
-    const r=await fetch('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=3');
+    const r=await fetch('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=1');
     const d=await r.json();
     if(d.data&&d.data.length>0){
       const t=d.data[0];
-      playDeezer(t.id,t.title,t.artist.name,t.album.cover_big);
-      sendJitsiMsg('🎵 Now playing: '+t.title+' — '+t.artist.name);
-    }else{
-      sendJitsiMsg('❌ No results. Try a direct URL or @music upload');
+      playDZ(t.id,t.title,t.artist.name,t.album.cover_big);
+      if(api) api.executeCommand('toggleChat');
     }
-  }catch(e){sendJitsiMsg('❌ Search failed. Try @music upload')}
+  }catch(e){}
 }
 
-function playDeezer(id,title,artist,art){
-  // Remove old embed
-  const old=document.getElementById('deezerW');if(old)old.remove();
-  // Create Deezer widget
-  const w=document.createElement('div');w.id='deezerW';
-  w.style.cssText='position:fixed;bottom:148px;left:50%;transform:translateX(-50%);width:300px;z-index:65;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);border:1px solid rgba(245,158,11,.2);';
+function playDZ(id,title,artist,art){
+  document.getElementById('deezerW')?.remove();
+  const w=document.createElement('div');
+  w.id='deezerW';
+  w.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:200;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.7);border:1px solid rgba(245,158,11,.3)';
   const f=document.createElement('iframe');
   f.src='https://widget.deezer.com/widget/dark/track/'+id+'?tracklist=false&height=80';
   f.width='300';f.height='80';f.frameBorder='0';f.allow='autoplay; encrypted-media';
-  f.style.cssText='border:none;border-radius:14px;';
-  w.appendChild(f);document.body.appendChild(w);
-  // Update widget
-  document.getElementById('musicW').classList.add('show');
-  document.getElementById('musicTitle').textContent=title;
-  document.getElementById('musicArtist').textContent=artist;
-  if(art){document.getElementById('musicArt').innerHTML='<img src="'+art+'">'}
-  toast('🎵 '+title,'ok');
-  // Sync to peers via Jitsi chat
-  if(api) api.sendCommand('music-sync',{value:JSON.stringify({id,title,artist,art})});
+  f.style.cssText='border:none;border-radius:14px';
+  w.appendChild(f);
+  document.body.appendChild(w);
 }
 
-function playMusicUrl(url,title,senderId){
-  musicAudio.src=url;
-  musicAudio.play().then(()=>{
-    document.getElementById('musicW').classList.add('show');
-    document.getElementById('musicTitle').textContent=title;
-    document.getElementById('musicArtist').textContent=senderId||'Shared';
-    document.getElementById('mPlayBtn').textContent='⏸';
-    musicAudio.ontimeupdate=()=>{
-      if(musicAudio.duration) document.getElementById('mFill').style.width=(musicAudio.currentTime/musicAudio.duration)*100+'%';
-    };
-    musicAudio.onended=()=>{
-      document.getElementById('mPlayBtn').textContent='▶';
-      document.getElementById('mFill').style.width='0%';
-    };
-  }).catch(e=>sendJitsiMsg('❌ '+e.message));
+function playUrl(url,title){
+  const a=document.getElementById('ma');
+  a.src=url;
+  a.play();
 }
 
-function mToggle(){
-  if(!musicAudio.paused){musicAudio.pause();document.getElementById('mPlayBtn').textContent='▶'}
-  else{musicAudio.play();document.getElementById('mPlayBtn').textContent='⏸'}
-}
-function mPrev(){musicAudio.currentTime=0}
-function mNext(){musicAudio.currentTime=musicAudio.duration||0}
-
-function sendJitsiMsg(text){
-  if(api) api.executeCommand('toggleChat');
-  // Use Jitsi's sendTextMessage to broadcast
-  if(api) api.sendCommand('chat-msg',{value:text});
-}
-
-
-
-// File upload for music
-const fileInput=document.createElement('input');
-fileInput.type='file';fileInput.accept='audio/*';fileInput.id='fileInput';fileInput.style.display='none';
-fileInput.onchange=e=>{
+document.getElementById('fi').onchange=e=>{
   const f=e.target.files[0];
-  if(f){
-    const url=URL.createObjectURL(f);
-    playMusicUrl(url,f.name.replace(/\.[^.]+$/,''),myName);
-    sendJitsiMsg('🎵 Playing: '+f.name);
-  }
+  if(f) playUrl(URL.createObjectURL(f),f.name);
 };
-document.body.appendChild(fileInput);
 </script>
 </body>
 </html>
