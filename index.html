@@ -1237,27 +1237,55 @@ async function startCall(isJoiner = false) {
   document.getElementById('shareLinkText').textContent = window.location.origin + window.location.pathname + '#' + roomId;
   window.location.hash = roomId;
 
-  peer = new Peer('parsnobix-' + roomId + '-' + generateId(4));
+  // Creator gets predictable ID, joiner gets random ID
+  const peerId = isJoiner ? ('pn-' + roomId + '-' + generateId(4)) : ('pn-' + roomId);
+  peer = new Peer(peerId);
 
-  peer.on('open', () => {
+  peer.on('open', (id) => {
     document.getElementById('connStatus').textContent = 'Connected';
+    console.log('My peer ID:', id);
+
     if (isJoiner) {
-      connectToPeer();
+      // Joiner: connect to the creator
+      setTimeout(() => joinRoom(), 500);
     }
   });
 
+  // Creator: listen for incoming data connections
   peer.on('connection', (c) => {
+    console.log('Incoming connection from:', c.peer);
     conn = c;
     setupConnection();
+
+    // Creator calls the joiner back with their stream
+    c.on('open', () => {
+      if (localStream) {
+        const call = peer.call(c.peer, localStream);
+        if (call) {
+          call.on('stream', (stream) => {
+            remoteStream = stream;
+            document.getElementById('remoteVideo').srcObject = stream;
+            document.getElementById('remoteVideoContainer').style.display = 'block';
+            document.getElementById('noOne').style.display = 'none';
+            document.getElementById('connStatus').textContent = 'In call';
+            updateParticipants();
+          });
+          call.on('close', () => { handlePeerLeft(); });
+        }
+      }
+    });
   });
 
+  // Both sides: listen for incoming calls (for stream exchange)
   peer.on('call', (call) => {
+    console.log('Incoming call from:', call.peer);
     call.answer(localStream);
     call.on('stream', (stream) => {
       remoteStream = stream;
       document.getElementById('remoteVideo').srcObject = stream;
       document.getElementById('remoteVideoContainer').style.display = 'block';
       document.getElementById('noOne').style.display = 'none';
+      document.getElementById('connStatus').textContent = 'In call';
       updateParticipants();
     });
     call.on('close', () => { handlePeerLeft(); });
@@ -1273,13 +1301,12 @@ async function startCall(isJoiner = false) {
   });
 }
 
-function connectToPeer() {
-  conn = peer.connect('parsnobix-' + roomId + '-host');
-  if (!conn) {
-    // Try connecting to any peer with the room prefix
-    setTimeout(connectToPeer, 1000);
+function joinRoom() {
+  if (!peer || !peer.open) {
+    setTimeout(joinRoom, 500);
     return;
   }
+  conn = peer.connect('pn-' + roomId);
   setupConnection();
 }
 
