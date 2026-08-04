@@ -1,140 +1,639 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ParsNobix</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,sans-serif;background:#090a0e;color:#f0f4f8;height:100vh;overflow:hidden}
-#landing{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#090a0e;z-index:100}
-.l-box{background:#111218;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;width:380px;display:flex;flex-direction:column;gap:16px}
-.l-box h1{font-size:24px;text-align:center}
-.l-box p{text-align:center;color:#94a3b8;font-size:13px;margin-top:-8px}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
-.field input{background:#090a0e;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f0f4f8;font:inherit;font-size:14px;outline:none}
-.field input:focus{border-color:#f59e0b}
-.btn{padding:12px;border:none;border-radius:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;background:#f59e0b;color:#000}
-.btn:active{transform:scale(.97)}
-.btn2{background:#1a1c26;border:1px solid rgba(255,255,255,.1);color:#f0f4f8}
-.sep{text-align:center;color:#5a6577;font-size:11px;text-transform:uppercase;letter-spacing:1px}
-#jitsi{display:none;width:100%;height:100vh}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ParsNobix - Professional infrastructure and development services. VPN, VPS, DNS, domains, Telegram bots, and custom web applications.">
+    <title>ParsNobix — Infrastructure & Development Tools</title>
+    <!-- Font Awesome for professional icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #08090a;
+            --bg-panel: #0f1011;
+            --bg-elevated: #191a1b;
+            --bg-hover: #28282c;
+            --text-primary: #f7f8f8;
+            --text-secondary: #d0d6e0;
+            --text-muted: #8a8f98;
+            --text-dim: #62666d;
+            --accent: #7170ff;
+            --accent-hover: #828fff;
+            --accent-bg: #5e6ad2;
+            --border: rgba(255,255,255,0.08);
+            --border-subtle: rgba(255,255,255,0.05);
+            --radius: 8px;
+            --radius-sm: 6px;
+            --radius-lg: 12px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(8,9,10,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.8px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+        }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+        .nav-links a {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-cta {
+            background: var(--accent-bg);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .nav-cta:hover { background: var(--accent-hover); }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 32px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(94,106,210,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            left: -150px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(113,112,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        .hero-badge .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+        .hero h1 {
+            font-size: clamp(40px, 7vw, 72px);
+            font-weight: 600;
+            letter-spacing: -2.5px;
+            line-height: 1.0;
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 560px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-primary {
+            background: var(--accent-bg);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-ghost {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-primary);
+        }
+
+        /* STATS */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            padding: 40px 32px 80px;
+            flex-wrap: wrap;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -1.2px;
+            color: var(--text-primary);
+        }
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* SECTIONS */
+        section {
+            padding: 80px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 600;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .section-desc {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin-bottom: 48px;
+            line-height: 1.6;
+        }
+
+        /* SERVICES GRID */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+        .service-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: background 0.2s, border-color 0.2s;
+            cursor: default;
+        }
+        .service-card:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.12);
+        }
+        .service-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--accent);
+            background: rgba(113,112,255,0.1);
+            border: 1px solid rgba(113,112,255,0.2);
+            margin-bottom: 16px;
+        }
+        .service-card h3 {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+        .service-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .service-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 16px;
+        }
+        .tag {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 9999px;
+            padding: 4px 10px;
+        }
+
+        /* WHY US */
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .why-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+        .why-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .why-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* CTA SECTION */
+        .cta-section {
+            text-align: center;
+            padding: 100px 32px;
+            position: relative;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(94,106,210,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section h2 {
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 600;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+        }
+        .cta-section p {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 48px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .footer-left {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+        .footer-links a {
+            font-size: 13px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--text-secondary); }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-cta { display: none; }
+            .hero { padding: 120px 20px 60px; }
+            .hero-buttons { flex-direction: column; width: 100%; max-width: 300px; }
+            .hero-buttons button { width: 100%; }
+            .stats { gap: 24px; }
+            .services-grid { grid-template-columns: 1fr; }
+            section { padding: 60px 20px; }
+            footer { flex-direction: column; text-align: center; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="landing">
-  <div class="l-box">
-    <h1>📡 ParsNobix</h1>
-    <p>Encrypted voice & screen share</p>
-    <div class="field">
-      <label>Name</label>
-      <input type="text" id="name" placeholder="Your name" maxlength="30">
+<!-- NAV -->
+<nav>
+    <div class="nav-logo">
+        <i class="fas fa-server logo-icon"></i>
+        ParsNobix
     </div>
-    <button class="btn" onclick="create()">✦ Create Room</button>
-    <div class="sep">or join</div>
-    <div class="field">
-      <label>Room code</label>
-      <input type="text" id="room" placeholder="Paste code" maxlength="50">
+    <ul class="nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#why">Why Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get Started</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-badge"><span class="status-dot"></span> Available for new projects</div>
+    <h1>Infrastructure & Development <span>Services</span></h1>
+    <p>VPN setup, VPS hosting, domain configuration, Telegram bots, web apps, Cloudflare management — everything you need to run online, delivered fast.</p>
+    <div class="hero-buttons">
+        <button class="btn-primary" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">View Services</button>
+        <button class="btn-ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact Me</button>
     </div>
-    <button class="btn btn2" onclick="join()">→ Join</button>
-  </div>
 </div>
 
-<div id="jitsi"></div>
+<!-- STATS -->
+<div class="stats">
+    <div class="stat">
+        <div class="stat-value">24h</div>
+        <div class="stat-label">Avg. Delivery</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value">99.9%</div>
+        <div class="stat-label">Uptime</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value">24/7</div>
+        <div class="stat-label">Support</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Client Satisfaction</div>
+    </div>
+</div>
 
-<audio id="ma" crossorigin="anonymous"></audio>
-<input type="file" id="fi" accept="audio/*" style="display:none">
+<!-- SERVICES -->
+<section id="services">
+    <div class="section-label">// Services</div>
+    <h2 class="section-title">Everything you need, built right.</h2>
+    <p class="section-desc">From infrastructure to code — I handle the technical work so you can focus on what matters.</p>
 
-<script src="https://meet.jit.si/external_api.js"></script>
+    <div class="services-grid">
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>VPN Setup & Sales</h3>
+            <p>Custom VPN server setup, configuration, and management. WireGuard, OpenVPN, and more. Secure, fast, and reliable.</p>
+            <div class="tags">
+                <span class="tag">WireGuard</span>
+                <span class="tag">OpenVPN</span>
+                <span class="tag">Custom Config</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-server"></i></div>
+            <h3>VPS Hosting & Management</h3>
+            <p>VPS deployment, server configuration, and ongoing management. Linux/Windows, any location, any stack.</p>
+            <div class="tags">
+                <span class="tag">Linux</span>
+                <span class="tag">Windows</span>
+                <span class="tag">Any Stack</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-globe-americas"></i></div>
+            <h3>Domains & DNS</h3>
+            <p>Domain registration, DNS configuration, nameserver setup, and subdomain management. Clean, fast propagation.</p>
+            <div class="tags">
+                <span class="tag">DNS Records</span>
+                <span class="tag">Subdomains</span>
+                <span class="tag">Nameservers</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-bolt"></i></div>
+            <h3>Cloudflare Configuration</h3>
+            <p>Full Cloudflare setup: DNS, SSL, Workers, Rules, Security, CDN, and caching. Speed and protection for any site.</p>
+            <div class="tags">
+                <span class="tag">SSL/TLS</span>
+                <span class="tag">Workers</span>
+                <span class="tag">CDN</span>
+                <span class="tag">Firewall</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-robot"></i></div>
+            <h3>Telegram Bots</h3>
+            <p>Custom Telegram bots: automation, moderation, payments, databases, inline queries. Anything you can imagine.</p>
+            <div class="tags">
+                <span class="tag">Automation</span>
+                <span class="tag">Payments</span>
+                <span class="tag">Moderation</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-laptop-code"></i></div>
+            <h3>Web Apps & Hosting</h3>
+            <p>Full-stack web development: landing pages, dashboards, SaaS apps, APIs. Deployed and hosted for you.</p>
+            <div class="tags">
+                <span class="tag">HTML/CSS/JS</span>
+                <span class="tag">Python</span>
+                <span class="tag">Node.js</span>
+                <span class="tag">React</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-puzzle-piece"></i></div>
+            <h3>Site Plugins</h3>
+            <p>Custom plugins for your website: chatbots, analytics, forms, payment integrations, and more.</p>
+            <div class="tags">
+                <span class="tag">Widgets</span>
+                <span class="tag">Integrations</span>
+                <span class="tag">Custom Code</span>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon"><i class="fas fa-bolt"></i></div>
+            <h3>Vibe Coding & Apps</h3>
+            <p>Fast prototyping, app development, and vibe-coded solutions. From idea to working product, quick.</p>
+            <div class="tags">
+                <span class="tag">Prototyping</span>
+                <span class="tag">Apps</span>
+                <span class="tag">Automation</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+    <div class="section-label">// Why ParsNobix</div>
+    <h2 class="section-title">Built different.</h2>
+    <p class="section-desc">Not a company. Not a middleman. One person who actually knows what they're doing.</p>
+
+    <div class="why-grid">
+        <div class="why-card">
+            <h4><i class="fas fa-bolt" style="color: #ff5b4f; margin-right: 8px;"></i>Fast Delivery</h4>
+            <p>Most tasks done within 24 hours. No ticket queues, no waiting for "the team". Direct communication, instant execution.</p>
+        </div>
+        <div class="why-card">
+            <h4><i class="fas fa-cubes" style="color: #5e6ad2; margin-right: 8px;"></i>Full Stack</h4>
+            <p>From DNS records to deployed apps, from VPN tunnels to Telegram bots — one person handles the entire stack.</p>
+        </div>
+        <div class="why-card">
+            <h4><i class="fas fa-tag" style="color: #ffd700; margin-right: 8px;"></i>Fair Pricing</h4>
+            <p>No agency markup. You pay for the work, not the overhead. Crypto-friendly and flexible on payment.</p>
+        </div>
+        <div class="why-card">
+            <h4><i class="fas fa-shield-alt" style="color: #10b981; margin-right: 8px;"></i>Reliability</h4>
+            <p>Servers configured right the first time. Security-first mindset. Uptime that actually holds.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="cta-section">
+    <h2>Ready to start?</h2>
+    <p>Tell me what you need. I'll tell you what it costs. We go from there.</p>
+    <div class="hero-buttons" style="justify-content:center">
+        <a href="https://t.me/ParsNobix" target="_blank" class="btn-primary" style="text-decoration:none; display:inline-block;">Message on Telegram</a>
+        <a href="mailto:contact@parsnobix.run.place" class="btn-ghost" style="text-decoration:none; display:inline-block;">Email Me</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-left">© 2026 ParsNobix. All rights reserved.</div>
+    <ul class="footer-links">
+        <li><a href="https://t.me/ParsNobix" target="_blank"><i class="fab fa-telegram"></i> Telegram</a></li>
+        <li><a href="https://github.com/azfarbod50-blip" target="_blank"><i class="fab fa-github"></i> GitHub</a></li>
+        <li><a href="https://parsnobix.run.place" target="_blank"><i class="fas fa-globe"></i> Domain</a></li>
+    </ul>
+</footer>
+
 <script>
-let api=null;
+    // Smooth scroll for all hash links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            const target = document.querySelector(a.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
 
-function create(){
-  const n=document.getElementById('name').value.trim()||'Anon';
-  const r='PN-'+Math.random().toString(36).slice(2,8);
-  start(n,r);
-}
-function join(){
-  const n=document.getElementById('name').value.trim()||'Anon';
-  const r=document.getElementById('room').value.trim();
-  if(!r)return alert('Enter room code');
-  start(n,r);
-}
-function start(name,room){
-  document.getElementById('landing').style.display='none';
-  document.getElementById('jitsi').style.display='block';
+    // Nav background on scroll
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+        nav.style.borderBottomColor = window.scrollY > 20 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)';
+    });
 
-  api=new JitsiMeetExternalAPI('meet.jit.si',{
-    roomName:room,
-    parentNode:document.getElementById('jitsi'),
-    userInfo:{displayName:name},
-    configOverwrite:{
-      startWithAudioMuted:false,
-      startWithVideoMuted:true,
-      prejoinPageEnabled:false,
-      disableDeepLinking:true
-    },
-    interfaceConfigOverwrite:{
-      SHOW_JITSI_WATERMARK:false,
-      SHOW_BRAND_WATERMARK:false,
-      SHOW_WATERMARK_FOR_GUESTS:false,
-      DEFAULT_BACKGROUND:'#090a0e'
-    }
-  });
+    // Fade-in animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
 
-  // Listen for @music in chat
-  api.addEventListener('chatMessageReceived',e=>{
-    const m=e.message||'';
-    if(m.startsWith('@music')) doMusic(m.slice(6).trim(),e.id);
-  });
-  api.addEventListener('readyToClose',()=>location.reload());
-}
-
-// ── MUSIC BOT ──
-function doMusic(q,id){
-  if(!q)return;
-  if(q==='upload'||q==='file'){document.getElementById('fi').click();return}
-  if(q.match(/\.(mp3|ogg|wav|flac|m4a|aac)(\?.*)?$/i)){playUrl(q,'Shared');return}
-  searchDZ(q);
-}
-
-async function searchDZ(q){
-  try{
-    const r=await fetch('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=1');
-    const d=await r.json();
-    if(d.data&&d.data.length>0){
-      const t=d.data[0];
-      playDZ(t.id,t.title,t.artist.name,t.album.cover_big);
-      if(api) api.executeCommand('toggleChat');
-    }
-  }catch(e){}
-}
-
-function playDZ(id,title,artist,art){
-  document.getElementById('deezerW')?.remove();
-  const w=document.createElement('div');
-  w.id='deezerW';
-  w.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:200;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.7);border:1px solid rgba(245,158,11,.3)';
-  const f=document.createElement('iframe');
-  f.src='https://widget.deezer.com/widget/dark/track/'+id+'?tracklist=false&height=80';
-  f.width='300';f.height='80';f.frameBorder='0';f.allow='autoplay; encrypted-media';
-  f.style.cssText='border:none;border-radius:14px';
-  w.appendChild(f);
-  document.body.appendChild(w);
-}
-
-function playUrl(url,title){
-  const a=document.getElementById('ma');
-  a.src=url;
-  a.play();
-}
-
-document.getElementById('fi').onchange=e=>{
-  const f=e.target.files[0];
-  if(f) playUrl(URL.createObjectURL(f),f.name);
-};
+    document.querySelectorAll('.service-card, .why-card, .stat').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
 </script>
+
 </body>
 </html>
